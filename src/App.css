@@ -124,7 +124,7 @@ form label span {
 
 .movieandshowinfo {
   display: grid;
-  background: rgba(0,0,0,0.2);
+  background: var(--secondary);
   padding: 15px;
   border-radius: 10px;
   margin: 10px 0;
