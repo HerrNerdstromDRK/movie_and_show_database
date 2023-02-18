@@ -1,5 +1,9 @@
 import React from "react";
 import { useLoaderData, useNavigation } from "react-router-dom";
+import { styled } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Grid from "@mui/material/Unstable_Grid2";
 
 /**
  * Component to display all inventory items. Uses the external
@@ -30,26 +34,37 @@ export default function MovieAndShowInfo() {
     );
   } else {
     return (
-      <div className="inventoryitems">
-        <h2>Movie And Show Info</h2>
+      <div>
+        <h2>
+          <center>Movie And Show Info</center>
+        </h2>
+        <center>Found {movieAndShowInfo.length} item(s)</center>
+        <p></p>
         {movieAndShowInfo.map((movieAndShowInfoFile) => (
-          <>
-            <p>Movie or Show Name: {movieAndShowInfoFile.name}</p>
-            <p>
+          <Grid
+            className="movieandshowinfo"
+            container
+            rowSpacing={2}
+            key={movieAndShowInfoFile.name}
+          >
+            <Grid className="movieandshowinfo-details" xs={12}>
+              <center>{movieAndShowInfoFile.name}</center>
+            </Grid>
+            <Grid className="movieandshowinfo-details" xs={6}>
               {movieAndShowInfoFile.correlatedFilesList.map((correlatedFile) =>
                 correlatedFile.mkvFilesByName.map((mkvFileName) => (
-                  <p>mp4file: {mkvFileName}</p>
+                  <center>{mkvFileName}</center>
                 ))
               )}
-            </p>
-            <p>
+            </Grid>
+            <Grid className="movieandshowinfo-details" xs={6}>
               {movieAndShowInfoFile.correlatedFilesList.map((correlatedFile) =>
                 correlatedFile.mp4FilesByName.map((mp4FileName) => (
-                  <p>mp4file: {mp4FileName}</p>
+                  <center>{mp4FileName}</center>
                 ))
               )}
-            </p>
-          </>
+            </Grid>
+          </Grid>
         ))}
       </div>
     );

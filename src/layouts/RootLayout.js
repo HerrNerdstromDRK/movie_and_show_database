@@ -11,6 +11,7 @@ export default function RootLayout() {
         <nav>
           <h1>Movie and Show Database</h1>
           <NavLink to="/movieandshowinfo">Movie and Show Info</NavLink>
+          <NavLink to="/missingfileinfo">Missing Movie and Shows</NavLink>
           <NavLink to="/hdmoviesandshows">HD Movies And Shows</NavLink>
           <NavLink to="/sdmoviesandshows">SD Movies And Shows</NavLink>
           <></>

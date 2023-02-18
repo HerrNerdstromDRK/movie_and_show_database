@@ -35,6 +35,7 @@ import HDMoviesAndShows from "./pages/HDMoviesAndShows";
 import { hdMoviesAndShowsLoader } from "./loaders/hdMoviesAndShowsLoader";
 import { sdMoviesAndShowsLoader } from "./loaders/sdMoviesAndShowsLoader";
 import { movieAndShowInfoLoader } from "./loaders/movieAndShowInfoLoader";
+import { missingFileInfoLoader } from "./loaders/missingFileInfoLoader";
 import SDMoviesAndShows from "./pages/SDMoviesAndShows";
 
 /**
@@ -51,6 +52,12 @@ function App() {
           path="/movieandshowinfo"
           element={<MovieAndShowInfo />}
           loader={movieAndShowInfoLoader}
+        />
+        <Route
+          index
+          path="/missingfileinfo"
+          element={<MovieAndShowInfo />}
+          loader={missingFileInfoLoader}
         />
         <Route
           path="/hdmoviesandshows"
