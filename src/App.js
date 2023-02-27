@@ -10,33 +10,20 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import InventoryItems from "./pages/InventoryItems";
-import InventoryItem, {
-  inventoryItemButtonHandler,
-  inventoryItemLoader,
-} from "./pages/InventoryItem";
-import { inventoryItemsLoader } from "./loaders/inventoryItemsLoader";
-import { inventoryItemsByUserNameLoader } from "./loaders/inventoryItemsByUserNameLoader";
-import CreateInventoryItem, {
-  createInventoryItemAction,
-} from "./pages/CreateInventoryItem";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import Logout from "./pages/Logout";
 import PageError from "./pages/PageError";
 
 // Layouts
 import RootLayout from "./layouts/RootLayout";
-import InventoryItemsError from "./pages/PageError";
-import RequireAuth from "./components/RequireAuth";
 import useAuth from "./hooks/useAuth";
 import MovieAndShowInfo from "./pages/MovieAndShowInfo";
+import MissingMovieAndShowInfo from "./pages/MissingMovieAndShowInfo";
 import HDMoviesAndShows from "./pages/HDMoviesAndShows";
 import { hdMoviesAndShowsLoader } from "./loaders/hdMoviesAndShowsLoader";
 import { sdMoviesAndShowsLoader } from "./loaders/sdMoviesAndShowsLoader";
 import { movieAndShowInfoLoader } from "./loaders/movieAndShowInfoLoader";
 import { missingFileInfoLoader } from "./loaders/missingFileInfoLoader";
 import SDMoviesAndShows from "./pages/SDMoviesAndShows";
+import { missingMovieAndShowInfoButtonHandler } from "./pages/MissingMovieAndShowInfo";
 
 /**
  * Build the Component structure via react router v6 structure.
@@ -48,16 +35,16 @@ function App() {
     createRoutesFromElements(
       <Route path="/" element={<RootLayout />} errorElement={<PageError />}>
         <Route
+          default
           index
-          path="/movieandshowinfo"
           element={<MovieAndShowInfo />}
           loader={movieAndShowInfoLoader}
         />
         <Route
-          index
           path="/missingfileinfo"
-          element={<MovieAndShowInfo />}
+          element={<MissingMovieAndShowInfo />}
           loader={missingFileInfoLoader}
+          action={missingMovieAndShowInfoButtonHandler}
         />
         <Route
           path="/hdmoviesandshows"
