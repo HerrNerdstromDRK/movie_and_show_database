@@ -1,4 +1,4 @@
-import { faCropSimple } from "@fortawesome/free-solid-svg-icons";
+//import { faCropSimple } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import {
   Form,
@@ -6,6 +6,10 @@ import {
   useLoaderData,
   useNavigation,
 } from "react-router-dom";
+import api from "../api/axios";
+
+const jobRecordMakeFakeMKVAPI = "/jobrecordmakefakemkv";
+const jobRecordTranscodeMKVAPI = "/jobrecordtranscodemkv";
 
 function getRows(movieAndShowInfoFile) {
   let rows = [];
@@ -37,8 +41,8 @@ function getRows(movieAndShowInfoFile) {
 }
 
 /**
- * Component to display all inventory items. Uses the external
- * inventoryItemsLoader function to retrieve the items from the backend.
+ * Component to display all missing movies and tv shows. Uses the external
+ * missingFileInfoLoader function to retrieve the information from the backend.
  * @returns
  */
 export default function MissingMovieAndShowInfo() {
@@ -46,6 +50,13 @@ export default function MissingMovieAndShowInfo() {
   // This will invoke the imported inventoryItemLoader as assigned in App.js
   const movieAndShowInfo = useLoaderData();
   const navigation = useNavigation();
+
+  // TODO: Update the buttons for jobs that have been added
+  const actionMessageObject = useActionData();
+  const actionMessage = actionMessageObject?.message
+    ? actionMessageObject.message
+    : "";
+  console.log("MissingMovieAndShowInfo> actionMessage: " + actionMessage);
 
   // The proper method to handle slow loader functions is with Response/Await
   // I was able to get it working, but it became noisy when there were no
@@ -58,7 +69,6 @@ export default function MissingMovieAndShowInfo() {
     // No inventory items to show.
     return (
       <div className="inventoryitems">
-        <h2>Missing Files</h2>
         <p>No items to show.</p>
       </div>
     );
@@ -111,7 +121,12 @@ function getRow(theRow, movieAndShowInfoFile) {
             <Form method="PUT">
               <button
                 name="mkvButtonName"
-                value={JSON.stringify(movieAndShowInfoFile)}
+                value={JSON.stringify(
+                  createMakeFakeOrTranscodeMKVFileButtonObject(
+                    movieAndShowInfoFile,
+                    theRow
+                  )
+                )}
                 type="submit"
               >
                 Make fake MKV File
@@ -121,9 +136,12 @@ function getRow(theRow, movieAndShowInfoFile) {
             <Form method="POST">
               <button
                 name="mp4ButtonName"
-                value={
-                  movieAndShowInfoFile.movieOrShowName + "." + theRow.fileName
-                }
+                value={JSON.stringify(
+                  createMakeFakeOrTranscodeMKVFileButtonObject(
+                    movieAndShowInfoFile,
+                    theRow
+                  )
+                )}
                 type="submit"
               >
                 Transcode File
@@ -138,12 +156,29 @@ function getRow(theRow, movieAndShowInfoFile) {
   );
 }
 
-/*
-                value={[
-                  JSON.stringify(movieAndShowInfoFile),
-                  JSON.stringify(theRow),
-                ]}
-*/
+/**
+ * Create a new object that represents the information needed to
+ *  make a fake MKV file for the given movie or tv show and individual
+ *  file.
+ * @param {} movieAndShowInfoFile
+ * @param {*} theRow
+ */
+function createMakeFakeOrTranscodeMKVFileButtonObject(
+  movieAndShowInfoFile,
+  theRow
+) {
+  let makeFakeOrTranscodeMKVFileObject = {
+    mkvLongPath: movieAndShowInfoFile.mkvLongPath,
+    mp4LongPath: movieAndShowInfoFile.mp4LongPath,
+    movieOrShowName_id: movieAndShowInfoFile._id,
+    movieOrShowName: movieAndShowInfoFile.movieOrShowName,
+    mkvFileName: theRow.mkvFileName,
+    fileName: theRow.fileName,
+    missingMKVFile: theRow.missingMKVFile,
+    missingMP4File: theRow.missingMP4File,
+  };
+  return makeFakeOrTranscodeMKVFileObject;
+}
 
 export const missingMovieAndShowInfoButtonHandler = async ({
   request,
@@ -152,11 +187,11 @@ export const missingMovieAndShowInfoButtonHandler = async ({
   switch (request.method) {
     case "PUT": {
       // PUT means adding a request to create a fake mkv file.
-      return createFakeMKVJob({ request, params });
+      return addFakeMKVJob({ request, params });
     }
     case "POST": {
       // POST means adding a transcode request for a missing mp4 file.
-      return addTranscodeJob({ request, params });
+      return addTranscodeMKVJob({ request, params });
     }
     default: {
       // Either failed to delete inventoryItem or failed to find/return the owning
@@ -168,27 +203,52 @@ export const missingMovieAndShowInfoButtonHandler = async ({
   }
 };
 
-const createFakeMKVJob = async ({ request, params }) => {
-  //  console.log("createFakeMKVJob> request: " + JSON.stringify(request));
+const addFakeMKVJob = async ({ request, params }) => {
   const formData = await request.formData();
-  //  console.log("createFakeMKVJob> formData: " + JSON.stringify(formData));
-  const movieAndShowInfoFile = JSON.parse(formData.get("mkvButtonName"));
+  const makeFakeMKVFileObject = JSON.parse(formData.get("mkvButtonName"));
+
   console.log(
-    "createFakeMKVJob> formData.get(mkvButtonName): " +
-      JSON.stringify(formData.get("mkvButtonName"))
+    "addFakeMKVJob> makeFakeMKVFileObject: " +
+      JSON.stringify(makeFakeMKVFileObject)
   );
-  console.log(
-    "createFakeMKVJob> movieAndShowInfoFile.movieOrShowName: " +
-      movieAndShowInfoFile.movieOrShowName
-  );
-  //  console.log("createFakeMKVJob> theRow: " + theRow);
-  return null;
+  try {
+    await api.post(jobRecordMakeFakeMKVAPI, makeFakeMKVFileObject);
+  } catch (err) {
+    if (err.response) {
+      // Not in the 200 response range
+      console.log(err.response.data);
+      console.log(err.response.status);
+      console.log(err.response.headers);
+      return { message: "Error: " + err.message };
+    } else {
+      // No response or non-200 error
+      console.log("addFakeMKVJob> Error: " + err.message);
+    }
+  } // catch()
+  return { message: "Successfully updated!" };
 };
 
-const addTranscodeJob = async ({ request, params }) => {
-  console.log("addTranscodeJob> request: " + JSON.stringify(request));
+const addTranscodeMKVJob = async ({ request, params }) => {
   const formData = await request.formData();
-  const testData = formData.get("mp4ButtonName");
-  console.log("addTranscodeJob> testData: " + testData);
-  return null;
+  const transcodeMKVFileObject = JSON.parse(formData.get("mp4ButtonName"));
+
+  console.log(
+    "addTranscodeMKVJob> transcodeMKVFileObject: " +
+      JSON.stringify(transcodeMKVFileObject)
+  );
+  try {
+    await api.post(jobRecordTranscodeMKVAPI, transcodeMKVFileObject);
+  } catch (err) {
+    if (err.response) {
+      // Not in the 200 response range
+      console.log(err.response.data);
+      console.log(err.response.status);
+      console.log(err.response.headers);
+      return { message: "Error: " + err.message };
+    } else {
+      // No response or non-200 error
+      console.log("addTranscodeMKVJob> Error: " + err.message);
+    }
+  } // catch()
+  return { message: "Successfully updated!" };
 };
