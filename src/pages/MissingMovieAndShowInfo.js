@@ -10,13 +10,14 @@ import api from "../api/axios";
 
 const jobRecordMakeFakeMKVAPI = "/jobrecordmakefakemkv";
 const jobRecordTranscodeMKVAPI = "/jobrecordtranscodemkv";
+const missingFileSubstituteName = "(none)";
 
 function getRows(movieAndShowInfoFile) {
   let rows = [];
 
   movieAndShowInfoFile.correlatedFilesList.forEach((correlatedFile) => {
     let idEntry =
-      movieAndShowInfoFile.mkvLongPath !== "(empty)"
+      movieAndShowInfoFile.mkvLongPath !== missingFileSubstituteName
         ? movieAndShowInfoFile.mkvLongPath +
           "\\" +
           correlatedFile.fileName +
